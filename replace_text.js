@@ -1,14 +1,15 @@
+// This is how the rot13 cypher itself works
 function rot13(str) {
   return str.split("").map(function(c) {
     // Ignores non-alphabetic characters
-    var lowerCharCode = c.toLowerCase().charCodeAt(0)
+    const lowerCharCode = c.toLowerCase().charCodeAt(0)
     if (lowerCharCode < 97 || lowerCharCode > 122) { return c; }
 
     // Shifts first half of (lowercase) alphabet to last half, and vice versa
-    var convertedLower = String.fromCharCode(
+    const convertedLower = String.fromCharCode(
       (lowerCharCode - 97 + 13) // `a` is 13, `b` is 14..
       % 26 // `n` is 0, `o` is 1..
-      + 97 // Shifts back up to lowerCharCode range, so `a` is `n`, `b` is `o`.. (and vice versa)
+      + 97 // Shifts back up to lowerCharCode range -- so `a` is `n`, `b` is `o`.. (and vice versa)
     );
     // Switches to uppercase if appropriate
     const
@@ -18,9 +19,15 @@ function rot13(str) {
   }).join("");
 }
 
-// Selections entirely contained within text inputs can be manipulated directly
+
+
+// ---------------------------------------------------------------------------------------
+//   This is how we modify all selected text on a page, even spread across many elements 
+// ---------------------------------------------------------------------------------------
+
+// Selections entirely contained within text inputs can be manipulated directly...
 if (document.activeElement.nodeName === "TEXTAREA" || document.activeElement.nodeName === "INPUT") {
-  var
+  const
     ta = document.activeElement, // document.activeElement
     start = ta.selectionStart,
     end = ta.selectionEnd,
@@ -29,16 +36,16 @@ if (document.activeElement.nodeName === "TEXTAREA" || document.activeElement.nod
     afterSelected = ta.value.slice(end);
   ta.value = beforeSelected + rot13(selected) + afterSelected;
 
-  // Set selection back to its original position
+  // Sets selection back to its original position
   ta.selectionStart = start;
   ta.selectionEnd = end;
 }
 
 // ...otherwise, we iterate through all text nodes in the range corresponding to the selection
 else {
-  var sel = window.getSelection(); // window.getSelection
-  for (var r = 0; r < sel.rangeCount; ++r) {
-    var
+  const sel = window.getSelection(); // window.getSelection
+  for (let r = 0; r < sel.rangeCount; ++r) {
+    const
       range = sel.getRangeAt(0), // selection.getRangeAt
       startOffset = range.startOffset,
       endOffset = range.endOffset,
@@ -56,11 +63,11 @@ else {
         }
       );
 
-    var node;
+    const node;
     while (node = selectedTextNodes.nextNode()) {
       // Work around a bug(?) in containsNode that unexpectedly returns true for the first text node in the element AFTER the selection
       if(range.endContainer !== range.startContainer && range.endContainer.nodeType !== Node.TEXT_NODE && range.endContainer.contains(node)) { continue; }
-      var
+      const
         // (Acts appropriately if the selection begins/ends in the middle of the current text node)
         begin = (node == range.startContainer) ? startOffset : 0,
         end = (node == range.endContainer) ? endOffset : Infinity,
@@ -70,7 +77,7 @@ else {
         afterSelected = text.slice(end);
       node.nodeValue = beforeSelected + rot13(selected) + afterSelected;
     }
-    // Set selection back to its original position
+    // Sets selection back to its original position
     range.setStart(range.startContainer, startOffset);
     range.setEnd(range.endContainer, endOffset);
   }
